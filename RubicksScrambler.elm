@@ -7,26 +7,28 @@ import Random
 {-|
 
 -- Todo
-* Current rendered move list gets lots of "!!"'s, which indicate exceptions.
-
-* Display rendered move list.
-
-* Probably support 0 moves
-
-* Make a button that you have to press to render new moves.
+* Support sizes other than 4x4x4
+** This involves changing how I do "Layers". Maybe make it a record of arrays of strings or something *shrugs*
 
 * Build a visual for what the scrambled cube will look like I suppose?
 
 * randomly choose and then demand colors be assigned to F/U/R 
 ** Presume plus-yellow color scheme with Red->White->Blue clockwise around a corner.
 
-* Support sizes other than 4x4x4
-** This involves changing how I do "Layers". Maybe make it a record of arrays of strings or something *shrugs*
-
 -}
 
 
 -- CONSTANTS
+
+
+minimumAllowedMoves : Int
+minimumAllowedMoves =
+    0
+
+
+maximumAllowedMoves : Int
+maximumAllowedMoves =
+    30
 
 
 twistDegrees : Array String
@@ -196,7 +198,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateScrambleMoves inputStr ->
-            case toRangedInteger inputStr 1 30 of
+            case toRangedInteger inputStr minimumAllowedMoves maximumAllowedMoves of
                 Err error ->
                     { model
                     | errorStr =
@@ -248,6 +250,10 @@ view model =
             [   Html.text """
                     html
                     {   font-family: sans-serif;
+                        padding: 10px 20px;
+                    }
+                    p
+                    {   margin: 10px 0px;
                     }
                     div.error
                     {   background-color: red;
@@ -260,8 +266,8 @@ view model =
         ,   Html.input
             [   Attr.type_ "number"
             ,   Attr.value <| toString model.scrambleTotalMoves
-            ,   Attr.attribute "min" "1"
-            ,   Attr.attribute "max" "30"
+            ,   Attr.attribute "min" <| toString minimumAllowedMoves
+            ,   Attr.attribute "max" <| toString maximumAllowedMoves
             ,   Events.onInput UpdateScrambleMoves
             ] []
         ,   Html.button
