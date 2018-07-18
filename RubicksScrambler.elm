@@ -1,14 +1,16 @@
 import Html exposing (Html, div)
 import Html.Attributes as Attr
 import Html.Events as Events
+import Html.Events.Extra exposing (onEnter)
 import Array exposing (Array)
 import Random
+import Rubiks.Layers exposing (numberOfLayers, getLayer)
 
-{-|
+{-
 
 -- Todo
-* Support sizes other than 4x4x4
-** This involves changing how I do "Layers". Maybe make it a record of arrays of strings or something *shrugs*
+
+* Uncaught RangeError: Maximum call stack size exceeded
 
 * Build a visual for what the scrambled cube will look like I suppose?
 
@@ -41,28 +43,6 @@ axes =
     Array.fromList ["F", "U", "R"]
 
 
-layers : Array String
-layers =
-    Array.fromList
---  [   ""     --  0,X  NO-OP
-    [   "1"    --  1,0  Front face
-    ,   "2"    --  2,1  second to Front-most layer
-    ,   "12"   --  3,2  Front half
-    ,   "3"    --  4,3  second from back layer
---  ,   "13"   --  5,X  ew!
-    ,   "23"   --  6,4  Middle two layers
-    ,   "123"  --  7,5  Everything EXCEPT back face
-    ,   "4"    --  8,6  Just the back face
-    ,   "14"   --  9,7  Front AND back faces
---  ,   "24"   -- 10,X  ew!
---  ,   "124"  -- 11,X  ew..
-    ,   "34"   -- 12,8  Back half
---  ,   "134"  -- 13,X  ew..
-    ,   "234"  -- 14,9  Everything EXCEPT front face
-    ,   "1234" -- 15,10 Turn entire cube in your hand
-    ]
-
-
 -- HELPER FUNCTIONS
 
 {-| Returns result with an error (could not parse to integer, or integer not positive) or with parsed positive integer.
@@ -70,15 +50,36 @@ layers =
 
 toRangedInteger : String -> Int -> Int -> Result String Int
 toRangedInteger inputStr min max =
-    String.toInt (String.trim inputStr)
-    |> Result.andThen
-        (\int ->
-            if int>=min
-                then if int<=max
-                    then Ok int
-                    else Err <| "'" ++ inputStr ++ "' must be less than " ++ (toString max) ++ "."
-                else Err <| "'" ++ inputStr ++ "' must be greater than " ++ (toString min) ++ "."
-        )
+    let
+        input =
+            String.trim inputStr
+    in
+-- We've got to interpret empty as zero so that you can backspace through
+-- an entire number and then type new digits and wind up with the expected
+-- resulting number. You wind up typing after a zero that has unexpectedly
+-- emerged from nowhere, but it then vanishes again after you type your
+-- first new digit so everything still works out semantically. 👍
+        if String.isEmpty input then
+            Ok 0
+        else
+            input |> String.toInt |> Result.andThen
+                (\int ->
+                    if int>=min
+                        then if int<=max
+                            then Ok int
+                            else Err
+                                <|  "'"
+                                ++  inputStr
+                                ++  "' must be less than "
+                                ++  (toString max)
+                                ++  "."
+                        else Err
+                            <|  "'"
+                            ++  inputStr
+                            ++  "' must be greater than "
+                            ++  (toString min)
+                            ++  "."
+                )
 
 
 -- MAIN
@@ -109,13 +110,13 @@ randomlySelectAxis =
     ( Random.int 0 <| (Array.length axes) - 1) -- randomly select initial, fake "previously used axis"
 
 
-randomMove : Random.Generator Move
-randomMove =
+randomMove : Int -> Random.Generator Move
+randomMove cubeSize =
     Random.map3
         Move
             ( Random.int 0 <| (Array.length twistDegrees) - 1 )
             ( Random.int 0 <| (Array.length axes) - 2 ) -- skip previously-used axis
-            ( Random.int 0 <| (Array.length layers) - 1 )
+            ( Random.int 0 <| (numberOfLayers cubeSize) - 1 )
 
 
 doScrambles : Model -> Cmd Msg
@@ -124,7 +125,9 @@ doScrambles model =
     DoneScrambles
     (   Random.pair
             randomlySelectAxis
-            ( Random.list model.scrambleTotalMoves randomMove )
+            ( Random.list
+                model.scrambleTotalMoves
+              <|randomMove model.cubeSize )
     )
 
 
@@ -135,6 +138,7 @@ type alias Model =
     {   errorStr : String
     ,   scrambleTotalMoves : Int
     ,   scrambleResults : List String
+    ,   cubeSize : Int
     }
 
 
@@ -150,6 +154,9 @@ init =
 
             ,   scrambleResults = []
 
+            ,   cubeSize =
+                    5
+
             }
     in
         model ! [ doScrambles model ]
@@ -157,87 +164,84 @@ init =
 
 -- UPDATE
 
-renderMove : Move -> (Int, List String) -> (Int, List String)
-renderMove uncookedMove (previousAxis, intermediateResult) =
-    let
+renderMove : Int -> Int -> (List Move) -> List String
+renderMove cubeSize previousAxis uncookedMoves =
+  case uncookedMoves of
+    [] -> -- bottom out
+      [""]
+    
+    uncookedMove :: remainingMoves ->
+      let
         cookedMove =
-            {   uncookedMove
-            |   axis =
-                    if uncookedMove.axis >= previousAxis
-                        then uncookedMove.axis + 1
-                        else uncookedMove.axis
+          { uncookedMove
+          | axis =
+              if uncookedMove.axis >= previousAxis
+                then uncookedMove.axis + 1
+                else uncookedMove.axis
 
-            }
+          }
 
-    in
-        (   cookedMove.axis -- This move's cooked axis is next move's "previously used axis".
-        ,   intermediateResult -- Append the new string onto the result list of strings.
-        ++  [   (   Maybe.withDefault "!!"
-                    <| Array.get cookedMove.axis axes
-                )
-                ++  (   Maybe.withDefault "!!"
-                        <| Array.get cookedMove.layer layers
-                    )
-                ++  "("
-                ++  (   Maybe.withDefault "!!"
-                        <| Array.get cookedMove.twistDegrees twistDegrees
-                    )
-                ++  ")"
-            ]
+      in
+        ( ( Maybe.withDefault "!!"
+            <|Array.get cookedMove.axis axes
+          )
+          ++( Maybe.withDefault "!!"
+              <|getLayer 0 cubeSize cookedMove.layer
+            )
+          ++"("
+          ++( Maybe.withDefault "!!"
+              <|Array.get cookedMove.twistDegrees twistDegrees
+            )
+          ++")"
         )
-
+        :: renderMove cubeSize cookedMove.axis remainingMoves
 
 
 type Msg
-    =   UpdateScrambleMoves String
-    |   DoScrambles
-    |   DoneScrambles ( Int, List Move )
+  = UpdateScrambleMoves String
+  | DoScrambles
+  | DoneScrambles ( Int, List Move )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        UpdateScrambleMoves inputStr ->
-            case toRangedInteger inputStr minimumAllowedMoves maximumAllowedMoves of
-                Err error ->
-                    { model
-                    | errorStr =
-                        error
-                    
-                    } ! []
+  case msg of
+    UpdateScrambleMoves inputStr ->
+      case toRangedInteger inputStr minimumAllowedMoves maximumAllowedMoves of
+        Err error ->
+          { model
+          | errorStr =
+              error
+          
+          } ! []
 
-                Ok scrambleTotalMoves ->
-                    { model
-                    | errorStr =
-                        ""
-                    
-                    ,   scrambleTotalMoves =
-                            scrambleTotalMoves
-                    
-                    } ! []
-        
-        DoScrambles ->
-            model ! [ doScrambles model ]
-        
-        DoneScrambles ( previousAxis, moves ) ->
-            let
-                (_, scrambleResults) =
-                    List.foldl renderMove (previousAxis, []) moves
-
-            in
-                { model
-                |   scrambleResults =
-                        scrambleResults
+        Ok scrambleTotalMoves ->
+          { model
+          | errorStr =
+              ""
+          
+          , scrambleTotalMoves =
+              scrambleTotalMoves
+          
+          } ! []
+    
+    DoScrambles ->
+      model ! [ doScrambles model ]
+    
+    DoneScrambles ( previousAxis, moves ) ->
+      { model
+      | scrambleResults =
+          renderMove model.cubeSize previousAxis moves
 
 {- Quick debug in case choices seem strange
-                ,   errorStr
-                        =   (List.head moves |> toString)
-                        ++ " : "
-                        ++  toString previousAxis
+      , errorStr
+          = (List.head moves |> toString)
+          ++" : "
+          ++toString previousAxis
 
 -}
 
-                } ! []
+      } ! []
 
 
 -- VIEW
@@ -245,34 +249,35 @@ update msg model =
 
 view : Model -> Html Msg
 view model =
-    div []
-    <|  [   Html.node "style" []
-            [   Html.text """
-                    html
-                    {   font-family: sans-serif;
-                        padding: 10px 20px;
-                    }
-                    p
-                    {   margin: 10px 0px;
-                    }
-                    div.error
-                    {   background-color: red;
-                        color: white;
-                        text-weight: bold;
-                    }
-                    """
-            ]
-        ,   div [ Attr.class "error" ] [ Html.text model.errorStr ]
-        ,   Html.input
-            [   Attr.type_ "number"
-            ,   Attr.value <| toString model.scrambleTotalMoves
-            ,   Attr.attribute "min" <| toString minimumAllowedMoves
-            ,   Attr.attribute "max" <| toString maximumAllowedMoves
-            ,   Events.onInput UpdateScrambleMoves
-            ] []
-        ,   Html.button
-                [ Events.onClick DoScrambles ]
-                [ Html.text "Show " {-++ (toString model.scrambleTotalMoves) ++ " New Scrambles!"-} ]
-        ]
-    ++  ( List.map (\move -> Html.p [] [ Html.text move ]) model.scrambleResults )
+  div []
+  <|[ Html.node "style" []
+      [ Html.text """
+          html
+          { font-family: sans-serif;
+            padding: 10px 20px;
+          }
+          p
+          { margin: 10px 0px;
+          }
+          div.error
+          { background-color: red;
+            color: white;
+            text-weight: bold;
+          }
+          """
+      ]
+    , div [ Attr.class "error" ] [ Html.text model.errorStr ]
+    , Html.input
+      [ Attr.type_ "number"
+      , Attr.value <| toString model.scrambleTotalMoves
+      , Attr.attribute "min" <| toString minimumAllowedMoves
+      , Attr.attribute "max" <| toString maximumAllowedMoves
+      , Events.onInput UpdateScrambleMoves
+      , onEnter DoScrambles
+      ] []
+    , Html.button
+        [ Events.onClick DoScrambles ]
+        [ Html.text "Show " {-++ (toString model.scrambleTotalMoves) ++ " New Scrambles!"-} ]
+    ]
+  ++  ( List.map (\move -> Html.p [] [ Html.text move ]) model.scrambleResults )
 
