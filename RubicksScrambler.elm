@@ -5,12 +5,13 @@ import Html.Events.Extra exposing (onEnter)
 import Array exposing (Array)
 import Random
 import Rubiks.Layers exposing (numberOfLayers, getLayer)
+import MyBasics exposing (incrementIf, decrementIf, curryRight)
 
 {-
 
 -- Todo
 
-* Uncaught RangeError: Maximum call stack size exceeded
+* Build a select element (or something) to choose cube size
 
 * Build a visual for what the scrambled cube will look like I suppose?
 
@@ -44,6 +45,15 @@ axes =
 
 
 -- HELPER FUNCTIONS
+
+{-| Just a quick, author-invented guestimate function of optimal number of scramble moves given a cube size.
+Ultimately this is (cubesize-0.5)*6, but I convoluted the formula slightly just to avoid floats. 
+-}
+
+defaultScrambles : Int -> Int
+defaultScrambles cubeSize =
+  ( cubeSize*2 - 1 ) * 3
+
 
 {-| Returns result with an error (could not parse to integer, or integer not positive) or with parsed positive integer.
 -}
@@ -149,13 +159,13 @@ init =
             {   errorStr =
                     ""
 
-            ,   scrambleTotalMoves =
-                    14
+            ,   scrambleTotalMoves = -- defaultScrambles cubeSize ..
+                    21
 
             ,   scrambleResults = []
 
             ,   cubeSize =
-                    5
+                    4
 
             }
     in
@@ -186,7 +196,7 @@ renderMove cubeSize previousAxis uncookedMoves =
             <|Array.get cookedMove.axis axes
           )
           ++( Maybe.withDefault "!!"
-              <|getLayer 0 cubeSize cookedMove.layer
+              <|getLayer cubeSize cookedMove.layer
             )
           ++"("
           ++( Maybe.withDefault "!!"
@@ -245,7 +255,6 @@ update msg model =
 
 
 -- VIEW
-
 
 view : Model -> Html Msg
 view model =
