@@ -1,3 +1,5 @@
+module RubicksScrambler exposing (..)
+
 import Html exposing (Html, div)
 import Html.Attributes as Attr
 import Html.Events as Events
