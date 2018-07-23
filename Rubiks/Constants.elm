@@ -5,6 +5,7 @@ module Rubiks.Constants exposing (..)
 
 
 import Array exposing (Array)
+import Char
 
 
 type alias Model =
@@ -62,7 +63,7 @@ defaultCubeSize =
 
 defaultOrientation : Orientation
 defaultOrientation =
-  Orientation 0 1 2 -- front=Red, up=Blue, right=Yellow
+  Orientation 0 0 0 -- All sides red, basically an error condition.
 
 
 twistDegrees : Array String
@@ -75,22 +76,15 @@ axisNames =
   Array.fromList ["F", "U", "R"]
 
 
-type alias Face =
-  { colorIndex : Int
-  , colorName : String
-  , colorCSS : String
-  }
-
-
-faceData : Array Face
+faceData : Array String
 faceData =
   Array.fromList
-  [ Face 0 "Red" "red"
-  , Face 1 "Blue" "blue"
-  , Face 2 "Yellow" "yellow"
-  , Face 3 "Green" "green"
-  , Face 4 "White" "white"
-  , Face 5 "Orange" "orange"
+  [ "Red"
+  , "Blue"
+  , "Yellow"
+  , "Green"
+  , "White"
+  , "Orange"
   ]
 
 
@@ -128,3 +122,6 @@ cubeShapes =
   <| List.range 1 10
 
 
+largeBlackSquare : Char
+largeBlackSquare =
+  Char.fromCode 0x2B1B -- '⬛'

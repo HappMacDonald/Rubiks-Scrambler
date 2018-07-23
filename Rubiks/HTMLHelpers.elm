@@ -29,8 +29,8 @@ randomlySelectAxis =
 randomlySelectOrientation : Random.Generator Constants.RandomOrientation
 randomlySelectOrientation =
   Random.pair
-  ( Random.int 0 <| Array.length Constants.faceData )
-  ( Random.int 0 <| Array.length Constants.twistDegrees )
+  ( Random.int 0 <| ( Array.length Constants.faceData ) - 1)
+  ( Random.int 0 <| ( Array.length Constants.twistDegrees ) - 1 )
 
 
 randomMove : Int -> Random.Generator Constants.Move
@@ -90,3 +90,40 @@ cubeShapeOptions defaultCubeSize index cubeShapes =
       :: cubeShapeOptions defaultCubeSize (index+1) rest
 
 
+orientationDisplayRow : String -> Int -> List (Html Constants.Msg)
+orientationDisplayRow label faceIndex =
+  let
+    face =
+      Array.get faceIndex Constants.faceData
+
+    maybeResult =    
+      face
+      |>Maybe.map
+        ( \face ->
+            let
+              attr =
+                [ Attr.class face ]
+
+            in
+              [ Html.dt attr [ Html.text <| label ++ ":" ]
+              , Html.dd attr [ Html.text <| face ]
+              ]
+        )
+
+  in
+    Maybe.withDefault [] maybeResult
+
+
+{-| Converts a raw Orientation data structure into a friendly HTML display
+
+    orientationDisplay orientation == loads of HTML :P
+-}
+
+
+orientationDisplay : Constants.Orientation -> Html Constants.Msg
+orientationDisplay orientation =
+  Html.dl []
+  ( orientationDisplayRow "Front" orientation.front
+  ++orientationDisplayRow "Up" orientation.up
+  ++orientationDisplayRow "Right" orientation.right
+  )

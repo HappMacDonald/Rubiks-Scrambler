@@ -13,13 +13,7 @@ import MyBasics exposing (incrementIf, decrementIf, curryRight)
 
 -- Todo
 
-* running through a test series
-** left off on Helpers.renderOrientation crap
-
 * Can Move (and other Constants) become opaque?
-
-* randomly choose and then demand colors be assigned to F/U/R 
-** Presume plus-yellow color scheme with Red->White->Blue clockwise around a corner.
 
 * Build a visual for what the scrambled cube will look like I suppose?
 
@@ -87,6 +81,7 @@ update msg model =
       { model
       | scrambleResults = Helpers.renderMoves model.cubeSize previousAxis moves
       , orientation = Helpers.renderOrientation orientation
+--      , errorStr = toString orientation
 
 {- Quick debug in case choices seem strange
       , errorStr
@@ -127,23 +122,15 @@ update msg model =
 view : Constants.Model -> Html Constants.Msg
 view model =
   div []
-  <|[ Html.node "style" []
-      [ Html.text """
-          html
-          { font-family: sans-serif;
-            padding: 10px 20px;
-          }
-          p
-          { margin: 10px 0px;
-          }
-          div.error
-          { background-color: red;
-            color: white;
-            text-weight: bold;
-          }
-          """
-      ]
+  <|[ Html.node
+        "link"
+        [   Attr.rel "stylesheet"
+        ,   Attr.href "RubiksScrambler.css"
+        ]
+        []
     , div [ Attr.class "error" ] [ Html.text model.errorStr ]
+    , Html.p [] [ Html.text "Hold cube in the following orientation:" ]
+    , HTMLHelpers.orientationDisplay model.orientation
     , Html.p []
       [
         Html.select [ Events.onInput Constants.SizeChange ]
