@@ -166,22 +166,27 @@ and returns the full Front/Up/Right orientation that represents.
       == Orientation 5 4 3 -- Front=Orange, Up=White, Right=Green
 -}
 
-renderOrientation : Constants.RandomOrientation -> Maybe Constants.Orientation
+renderOrientation : Constants.RandomOrientation -> Constants.Orientation
 renderOrientation ( front, upIndex ) =
   let
+    frontRing =
+      Constants.faceRings
+      |>Array.get front
+
     up =
-      ( Constants.faceData
-        |>Array.get front
-        |>Maybe.andThen ( Array.get upIndex )
-      )
+      frontRing
+      |>Maybe.andThen ( Array.get upIndex )
+
+    rightIndex =
+      ( upIndex+1 ) -- next index in clockwise dir
+      % 
+      ( Array.length Constants.twistDegrees ) -- modulo length of array
+
+    right =
+      frontRing
+      |>Maybe.andThen ( Array.get rightIndex )
 
   in
-    case up of
-      Nothing ->
-        Nothing
-
-      Just up ->
-        Constants.Orientation
-          front
-          up
-          2
+    Maybe.map2 ( Constants.Orientation front ) up right
+    |>Maybe.withDefault Constants.defaultOrientation
+          
