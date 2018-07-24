@@ -14,6 +14,7 @@ type alias Model =
   , scrambleResults : List String
   , cubeSize : Int
   , orientation : Orientation
+  , cubeLayout : CubeLayout
   }
 
 
@@ -44,6 +45,18 @@ type alias RandomOrientation =
 
 type alias RandomPayload =
   ( RandomOrientation, Int, List Move )
+
+
+type alias CubeLayout =
+  Array CubeFaceLayout
+  
+
+type alias CubeFaceLayout =
+  Array CubeRowLayout
+
+
+type alias CubeRowLayout =
+  Array Int
 
 
 minimumAllowedMoves : Int
@@ -85,7 +98,25 @@ faceData =
   , "Green"
   , "White"
   , "Orange"
+  , "" -- Used for non-cell space in the scrambled graphic
   ]
+
+
+opposingColors : Array Int
+opposingColors =
+  Array.fromList
+  [ 5 --Orange - Yellow = 0=Red
+  , 3 --Green - Yellow = 1=Blue
+  , 4 --White + Yellow = 2=Yellow
+  , 1 --Blue + Yellow = 3=Green
+  , 2 --Yellow - Yellow = 4=White
+  , 0 --Red + Yellow = 5=Orange
+  ]
+
+
+blankFace : Int
+blankFace =
+  6
 
 
 {-| This strategy numbers each face, and defines an "axis" as
@@ -122,6 +153,3 @@ cubeShapes =
   <| List.range 1 10
 
 
-largeBlackSquare : Char
-largeBlackSquare =
-  Char.fromCode 0x2B1B -- '⬛'

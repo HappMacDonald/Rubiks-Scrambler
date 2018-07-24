@@ -13,9 +13,15 @@ import MyBasics exposing (incrementIf, decrementIf, curryRight)
 
 -- Todo
 
-* Can Move (and other Constants) become opaque?
+* Next, work out math to apply scramblemoves onto a CubeLayout
+*1> get model to start saving numeric versions of the scramble moves
+    in addition to the display versions.
+*2> Something to swap 4 row/columns among different faces
+*3> Something to rotate a face
+*4> And of course the logic to tie that all together into a full,
+    generic scrambleMove.
 
-* Build a visual for what the scrambled cube will look like I suppose?
+# (Nah) Can Move (and other Constants) become opaque?
 
 -}
 
@@ -44,6 +50,7 @@ init =
       , scrambleResults = []
       , cubeSize = Constants.defaultCubeSize
       , orientation = Constants.defaultOrientation
+      , cubeLayout = Helpers.defaultCubeLayout Constants.defaultCubeSize
       }
   in
     model ! [ HTMLHelpers.doScrambles model ]
@@ -77,10 +84,17 @@ update msg model =
     Constants.DoScrambles ->
       model ! [ HTMLHelpers.doScrambles model ]
     
-    Constants.DoneScrambles ( orientation, previousAxis, moves ) ->
+    Constants.DoneScrambles ( orientationSeed, previousAxis, moves ) ->
+      let
+        orientation =
+          Helpers.renderOrientation orientationSeed
+      
+      in
       { model
       | scrambleResults = Helpers.renderMoves model.cubeSize previousAxis moves
-      , orientation = Helpers.renderOrientation orientation
+      , orientation = orientation
+      , cubeLayout =
+          Helpers.orientedCubeLayout model.cubeSize orientation
 --      , errorStr = toString orientation
 
 {- Quick debug in case choices seem strange
@@ -111,6 +125,8 @@ update msg model =
               { model
               | cubeSize = value
               , scrambleTotalMoves = Helpers.defaultScrambles value
+              , cubeLayout =
+                  Helpers.orientedCubeLayout value model.orientation
               }
 
       in
@@ -129,6 +145,8 @@ view model =
         ]
         []
     , div [ Attr.class "error" ] [ Html.text model.errorStr ]
+    , Html.table [ Attr.class "graphic", Attr.attribute "cellspacing" "1" ]
+      <| HTMLHelpers.graphicRender model.cubeSize model.cubeLayout
     , Html.p [] [ Html.text "Hold cube in the following orientation:" ]
     , HTMLHelpers.orientationDisplay model.orientation
     , Html.p []

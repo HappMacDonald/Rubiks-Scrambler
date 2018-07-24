@@ -7,6 +7,8 @@ import Test exposing (..)
 import Rubiks.Constants as C
 import Rubiks.Helpers as H
 
+import Array
+
 
 rubiksScramblerTest : Test
 rubiksScramblerTest =
@@ -125,4 +127,75 @@ rubiksScramblerTest =
       <|\_ ->
           Expect.equal (H.renderOrientation (5, 2) ) ( C.Orientation 5 4 3)
     ]
+  , describe "defaultCubeLayout"
+    [ test "2x2x2"
+      <|\_ ->
+          Expect.equal
+            ( H.defaultCubeLayout 2 )
+            <|Array.fromList
+              [ Array.fromList
+                [ Array.fromList [ 0, 0 ]
+                , Array.fromList [ 0, 0 ]
+                ]
+              , Array.fromList
+                [ Array.fromList [ 1, 1 ]
+                , Array.fromList [ 1, 1 ]
+                ]
+              , Array.fromList
+                [ Array.fromList [ 2, 2 ]
+                , Array.fromList [ 2, 2 ]
+                ]
+              , Array.fromList
+                [ Array.fromList [ 3, 3 ]
+                , Array.fromList [ 3, 3 ]
+                ]
+              , Array.fromList
+                [ Array.fromList [ 4, 4 ]
+                , Array.fromList [ 4, 4 ]
+                ]
+              , Array.fromList
+                [ Array.fromList [ 5, 5 ]
+                , Array.fromList [ 5, 5 ]
+                ]
+              ]
+    ]
+    , describe "blankFaceLayout"
+      [ test "4x4x4"
+        <|\_ ->
+            Expect.equal
+            ( H.blankFaceLayout 4 )
+            <|Array.fromList
+              [ Array.fromList [ 6, 6, 6, 6 ]
+              , Array.fromList [ 6, 6, 6, 6 ]
+              , Array.fromList [ 6, 6, 6, 6 ]
+              , Array.fromList [ 6, 6, 6, 6 ]
+              ]
+      ]
+    , describe "solidFaceLayout"
+      [ test "3x3 yellow"
+        <|\_ ->
+            Expect.equal
+            ( H.solidFaceLayout 3 2 ) -- 2 == yellow
+            <|Array.fromList
+              [ Array.fromList [ 2, 2, 2 ]
+              , Array.fromList [ 2, 2, 2 ]
+              , Array.fromList [ 2, 2, 2 ]
+              ]
+      ]
+    , describe "orientedCubeLayout"
+      [ test "1x1x1 front=orange, up=blue, right=white (Orientation 5 1 4)"
+        <|\_ ->
+            Expect.equal
+            ( C.Orientation 5 1 4
+            |>H.orientedCubeLayout 1
+            )
+            <|Array.fromList
+              [ Array.fromList [ Array.fromList [ 1 ] ]
+              , Array.fromList [ Array.fromList [ 2 ] ]
+              , Array.fromList [ Array.fromList [ 5 ] ]
+              , Array.fromList [ Array.fromList [ 4 ] ]
+              , Array.fromList [ Array.fromList [ 0 ] ]
+              , Array.fromList [ Array.fromList [ 3 ] ]
+              ]
+      ]
   ]

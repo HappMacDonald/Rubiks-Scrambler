@@ -14,6 +14,7 @@ import Html.Attributes as Attr
 
 import Rubiks.Constants as Constants
 import Rubiks.Layers as Layers
+import Rubiks.Helpers as Helpers
 
 
 -- COMMANDS
@@ -29,7 +30,7 @@ randomlySelectAxis =
 randomlySelectOrientation : Random.Generator Constants.RandomOrientation
 randomlySelectOrientation =
   Random.pair
-  ( Random.int 0 <| ( Array.length Constants.faceData ) - 1)
+  ( Random.int 0 <| ( Array.length Constants.faceData ) - 2) -- skip blank face
   ( Random.int 0 <| ( Array.length Constants.twistDegrees ) - 1 )
 
 
@@ -127,3 +128,101 @@ orientationDisplay orientation =
   ++orientationDisplayRow "Up" orientation.up
   ++orientationDisplayRow "Right" orientation.right
   )
+
+
+graphicNullCells : Int -> List (Html Constants.Msg)
+graphicNullCells count =
+  List.repeat count ""
+  |>List.map graphicCell
+
+
+{-|Render a single cell of the scrambled graphic as a <td>.
+
+    graphicCell "Red" =(html)= "<td class='graphicCell Red'></td>"
+-}
+
+graphicCell : String -> Html Constants.Msg
+graphicCell class =
+  Html.td [ Attr.class <| "graphicCell " ++ class ] [ ]
+
+
+{-| Render a single row on a single face as <td>'s.
+This portion of the graphicRender function does not need
+to be passed the cubeSize, because the length of the row array
+ought to match it anyhow.
+
+    graphicRowRender <|Array.fromList [0,1,2]
+    -- gets rendered through TEA into the following HTML:
+      """
+      <td class="graphicCell Red"></td>
+      <td class="graphicCell Blue"></td>
+      <td class="graphicCell Yellow"></td>
+      """
+-}
+
+graphicRowRender : Constants.CubeRowLayout -> List (Html Constants.Msg)
+graphicRowRender row =
+  row
+  |>Array.toList
+  |>List.map
+    ( \cell ->
+        Array.get cell Constants.faceData
+        |>Maybe.withDefault ""
+        |>graphicCell
+    )
+
+{-|Render a "big row". That is, four faces in a horizontal row.
+Often this is just 3 blank faces and a real one, but that's
+no skin off of this function's nose.
+
+    graphicBigRowRender cubeSize face1 face2 face3 face4
+-}
+
+graphicBigRowRender :
+  Int
+  -> Constants.CubeFaceLayout
+  -> Constants.CubeFaceLayout
+  -> Constants.CubeFaceLayout
+  -> Constants.CubeFaceLayout
+  -> List (Html Constants.Msg)
+graphicBigRowRender cubeSize face1 face2 face3 face4 =
+  let
+    subRowRender subRow face =
+      Array.get subRow face
+      |>Maybe.withDefault
+        ( Array.repeat cubeSize 6 )
+      |> graphicRowRender
+  in
+    List.range 0 (cubeSize-1)
+    |>List.map
+      ( \subRow ->
+          Html.tr []
+          <|subRowRender subRow face1
+          ++subRowRender subRow face2
+          ++subRowRender subRow face3
+          ++subRowRender subRow face4
+      )
+
+{-|Render entire scrambled cube graphic, out of smaller pieces.
+
+    graphicRender 2 ( defaultCubeLayout 2) == display default 2x2x2
+-}
+
+graphicRender : Int -> Constants.CubeLayout -> List (Html Constants.Msg)
+graphicRender cubeSize cubeLayout =
+  let
+    blank =
+      Helpers.blankFaceLayout cubeSize
+    
+    face faceIndex =
+      Array.get faceIndex cubeLayout
+      |>Maybe.withDefault blank
+
+  in
+    graphicBigRowRender cubeSize blank (face 0) blank blank
+    ++graphicBigRowRender cubeSize
+      ( face 1 )
+      ( face 2 )
+      ( face 3 )
+      ( face 4 )
+    ++graphicBigRowRender cubeSize blank (face 5) blank blank

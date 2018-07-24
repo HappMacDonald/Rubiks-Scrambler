@@ -8,7 +8,7 @@ p
 div.error
 { background-color: red;
   color: white;
-  text-weight: bold;
+  font-weight: bold;
 }
 dl dt
 { float:left; 
@@ -29,3 +29,7 @@ dl dd
 .Green  { background-color: #080; color: white; }
 .White  { background-color: white; color: black; }
 .Orange { background-color: #f80; color: white; }
+
+.graphic { float: right; /*width: 42em;*/ background-color: #ccc; padding: 1em; }
+.graphicCell { width: 1em; height: 1em; margin: 0; padding: 0; }
+
