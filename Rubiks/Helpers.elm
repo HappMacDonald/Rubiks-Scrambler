@@ -7,6 +7,7 @@ module Rubiks.Helpers exposing (..)
 import Array exposing (Array)
 import Rubiks.Layers as Layers
 import Rubiks.Constants as Constants
+import Rubiks.CubeFaceLayout as CubeFaceLayout exposing (CubeFaceLayout)
 
 
 {-| Just a quick, author-invented guestimate function of optimal number
@@ -190,25 +191,11 @@ renderOrientation ( front, upIndex ) =
     |>Maybe.withDefault Constants.defaultOrientation
 
 
-solidFaceLayout : Int -> Int -> Constants.CubeFaceLayout
-solidFaceLayout cubeSize color =
-  Array.fromList
-  ( List.repeat cubeSize
-    <|Array.fromList
-    <|List.repeat cubeSize color
-  )
-
-
-blankFaceLayout : Int -> Constants.CubeFaceLayout
-blankFaceLayout cubeSize =
-  solidFaceLayout cubeSize Constants.blankFace
-
-
-solidCubeLayout : Int -> List Int -> Constants.CubeLayout
+solidCubeLayout : Int -> List (Maybe Int) -> Array CubeFaceLayout
 solidCubeLayout cubeSize colors =
   Array.fromList colors
   |>Array.map
-    ( solidFaceLayout cubeSize )
+    ( CubeFaceLayout.solidFaceLayout cubeSize )
 
 
 {-|This creates a fresh new cube layout that is colored per
@@ -217,22 +204,23 @@ ordinary face order (cells in face = faceIndex :P) at the specified cubeSize.
     defaultCubeLayout 2 == (A default CubeLayout for a 2x2x2)
 -}
 
-defaultCubeLayout : Int -> Constants.CubeLayout
+defaultCubeLayout : Int -> Array CubeFaceLayout
 defaultCubeLayout cubeSize =
   List.range 0 5
+  |> List.map Maybe
   |> solidCubeLayout cubeSize
 
 
 {-|Creates a solid cube layout that matches the requested orientation.
 -}
 
-orientedCubeLayout : Int -> Constants.Orientation -> Constants.CubeLayout
+orientedCubeLayout : Int -> Constants.Orientation -> Array CubeFaceLayout
 orientedCubeLayout cubeSize orientation =
   let
     opposingColor color =
-      Constants.opposingColors
-      |>Array.get color
-      |>Maybe.withDefault 6 -- invalid color *shrugs*
+      Maybe.map
+        Constants.opposingColorInts
+        |>Array.get color
   in
     [ orientation.up
     , opposingColor orientation.right

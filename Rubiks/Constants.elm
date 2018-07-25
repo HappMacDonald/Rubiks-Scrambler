@@ -3,26 +3,8 @@ module Rubiks.Constants exposing (..)
 {-| Just constants used by the Rubik's Scramble app
 -}
 
-
 import Array exposing (Array)
 import Char
-
-
-type alias Model =
-  { errorStr : String
-  , scrambleTotalMoves : Int
-  , scrambleResults : List String
-  , cubeSize : Int
-  , orientation : Orientation
-  , cubeLayout : CubeLayout
-  }
-
-
-type Msg
-  = UpdateScrambleMoves String
-  | DoScrambles
-  | DoneScrambles RandomPayload
-  | SizeChange String
 
 
 type alias Move =
@@ -45,18 +27,6 @@ type alias RandomOrientation =
 
 type alias RandomPayload =
   ( RandomOrientation, Int, List Move )
-
-
-type alias CubeLayout =
-  Array CubeFaceLayout
-  
-
-type alias CubeFaceLayout =
-  Array CubeRowLayout
-
-
-type alias CubeRowLayout =
-  Array Int
 
 
 minimumAllowedMoves : Int
@@ -102,8 +72,8 @@ faceData =
   ]
 
 
-opposingColors : Array Int
-opposingColors =
+opposingColorInts : Array Int
+opposingColorInts =
   Array.fromList
   [ 5 --Orange - Yellow = 0=Red
   , 3 --Green - Yellow = 1=Blue
@@ -112,11 +82,6 @@ opposingColors =
   , 2 --Yellow - Yellow = 4=White
   , 0 --Red + Yellow = 5=Orange
   ]
-
-
-blankFace : Int
-blankFace =
-  6
 
 
 {-| This strategy numbers each face, and defines an "axis" as

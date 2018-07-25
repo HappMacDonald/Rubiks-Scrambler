@@ -180,10 +180,10 @@ no skin off of this function's nose.
 
 graphicBigRowRender :
   Int
-  -> Constants.CubeFaceLayout
-  -> Constants.CubeFaceLayout
-  -> Constants.CubeFaceLayout
-  -> Constants.CubeFaceLayout
+  -> CubeFaceLayout
+  -> CubeFaceLayout
+  -> CubeFaceLayout
+  -> CubeFaceLayout
   -> List (Html Constants.Msg)
 graphicBigRowRender cubeSize face1 face2 face3 face4 =
   let
@@ -212,7 +212,7 @@ graphicRender : Int -> Constants.CubeLayout -> List (Html Constants.Msg)
 graphicRender cubeSize cubeLayout =
   let
     blank =
-      Helpers.blankFaceLayout cubeSize
+      CubeFaceLayout.blankFaceLayout cubeSize
     
     face faceIndex =
       Array.get faceIndex cubeLayout

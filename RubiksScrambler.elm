@@ -13,6 +13,15 @@ import MyBasics exposing (incrementIf, decrementIf, curryRight)
 
 -- Todo
 
+Status: making CubeFaceLayout module.
+* Have solid function, have getter token-functions.
+
+Next: write applier function using tokens.
+One possibility: make tokens be:
+token : Int(row) -> CubeRowLayout(input row) -> CubeFaceLayout (input face) ->
+  (CubeRowLayout(excised row) CubeFaceLayout(modified face))
+
+
 * Next, work out math to apply scramblemoves onto a CubeLayout
 *1> get model to start saving numeric versions of the scramble moves
     in addition to the display versions.
@@ -40,6 +49,15 @@ main =
 
 -- MODEL / INIT
 
+type alias Model =
+  { errorStr : String
+  , scrambleTotalMoves : Int
+  , scrambleResults : List String
+  , cubeSize : Int
+  , orientation : Orientation
+  , cubeLayout : Array CubeFaceLayout
+  }
+
 
 init : ( Constants.Model, Cmd Constants.Msg )
 init =
@@ -57,6 +75,13 @@ init =
 
 
 -- UPDATE
+
+type Msg
+  = UpdateScrambleMoves String
+  | DoScrambles
+  | DoneScrambles RandomPayload
+  | SizeChange String
+
 
 update : Constants.Msg -> Constants.Model -> ( Constants.Model, Cmd Constants.Msg )
 update msg model =

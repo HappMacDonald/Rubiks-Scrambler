@@ -159,43 +159,20 @@ rubiksScramblerTest =
                 ]
               ]
     ]
-    , describe "blankFaceLayout"
-      [ test "4x4x4"
-        <|\_ ->
-            Expect.equal
-            ( H.blankFaceLayout 4 )
-            <|Array.fromList
-              [ Array.fromList [ 6, 6, 6, 6 ]
-              , Array.fromList [ 6, 6, 6, 6 ]
-              , Array.fromList [ 6, 6, 6, 6 ]
-              , Array.fromList [ 6, 6, 6, 6 ]
-              ]
-      ]
-    , describe "solidFaceLayout"
-      [ test "3x3 yellow"
-        <|\_ ->
-            Expect.equal
-            ( H.solidFaceLayout 3 2 ) -- 2 == yellow
-            <|Array.fromList
-              [ Array.fromList [ 2, 2, 2 ]
-              , Array.fromList [ 2, 2, 2 ]
-              , Array.fromList [ 2, 2, 2 ]
-              ]
-      ]
-    , describe "orientedCubeLayout"
-      [ test "1x1x1 front=orange, up=blue, right=white (Orientation 5 1 4)"
-        <|\_ ->
-            Expect.equal
-            ( C.Orientation 5 1 4
-            |>H.orientedCubeLayout 1
-            )
-            <|Array.fromList
-              [ Array.fromList [ Array.fromList [ 1 ] ]
-              , Array.fromList [ Array.fromList [ 2 ] ]
-              , Array.fromList [ Array.fromList [ 5 ] ]
-              , Array.fromList [ Array.fromList [ 4 ] ]
-              , Array.fromList [ Array.fromList [ 0 ] ]
-              , Array.fromList [ Array.fromList [ 3 ] ]
-              ]
-      ]
+  , describe "orientedCubeLayout"
+    [ test "1x1x1 front=orange, up=blue, right=white (Orientation 5 1 4)"
+      <|\_ ->
+          Expect.equal
+          ( C.Orientation 5 1 4
+          |>H.orientedCubeLayout 1
+          )
+          <|Array.fromList
+            [ Array.fromList [ Array.fromList [ 1 ] ]
+            , Array.fromList [ Array.fromList [ 2 ] ]
+            , Array.fromList [ Array.fromList [ 5 ] ]
+            , Array.fromList [ Array.fromList [ 4 ] ]
+            , Array.fromList [ Array.fromList [ 0 ] ]
+            , Array.fromList [ Array.fromList [ 3 ] ]
+            ]
+    ]
   ]
