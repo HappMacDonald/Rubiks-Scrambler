@@ -19,4 +19,41 @@ cubeFaceLayoutTest =
           ( CFL.solidFaceLayout 3 2 ) -- 2 == yellow
           <|?
     ]
-  ]
+  , describe "rowFromTop"
+    [ test "no write"
+      <|\_ ->
+          let
+            face0 =
+              solidFaceLayout 3 4
+
+            (row0, face1) =
+              rowFromTop 0 ( Just [1,2,3] ) face0
+
+          in
+            Expect.equal
+              (  )
+              ( CubeRowLayout [4,4,4]
+              , CubeFaceLayout
+                { cubeSize = 3
+                , data =
+                  [ CubeRowLayout [1,2,3]
+                  , CubeRowLayout [4,4,4]
+                  , CubeRowLayout [4,4,4]
+                  ]
+                }
+              )
+    , test "read only"
+      <|\_ ->
+          let
+            face0 =
+              solidFaceLayout 3 4
+
+            (prevRow, nextFace) =
+              rowFromTop 0 ( Just [1,2,3] ) face0
+            
+            ()
+          in
+            Expect.equal
+              ( rowFromTop 0 Nothing face0 )
+              ( CubeRowLayout [4,4,4], face0 )
+
