@@ -14,16 +14,20 @@ import Rubiks.Constants
 import Array exposing (Array)
 
 
-type CubeRow =
-  CubeRow Array (Maybe Int)
-
-
 type CubeRowLayout =
-  CubeRowLayout
+  CubeRowLayout (Array (Maybe Int))
+
+
+type CubeFaceLayout =
+  CubeFaceLayout
   { cubeSize : Int
-  , data : Array CubeRow
+  , data : Array CubeRowLayout
   }
 
+
+type alias RowManipulator =
+  Int -> Maybe CubeRowLayout -> CubeFaceLayout ->
+  (CubeRowLayout, CubeFaceLayout)
 
 {-|Constructs a row that is a solid color.
 
@@ -75,6 +79,46 @@ blankFaceLayout cubeSize =
   solidFaceLayout cubeSize Nothing
 
 
+cubeRowLayout : List Int -> CubeRowLayout
+cubeRowLayout rowData =
+  rowData
+  |> List.map Just
+  |> Array.fromList
+  |> CubeRowLayout
+
+
+cubeFaceLayout : List CubeRowLayout -> Result String CubeFaceLayout
+cubeFaceLayout rowsData =
+  let
+    valid =
+      List.all
+      (\(CubeRowLayout row) ->
+              Array.length row == List.length rowsData
+
+      )
+      rowsData
+  in
+    if valid then
+      { cubeSize = Array.length rowsData
+      , data =
+          rowsData
+          |> Array.fromList
+          |> CubeFaceLayout
+      }
+      |> Ok
+    else
+      Err "All rows must be the same length as the number of rows passed in." 
+
+
+flipRowLayout : CubeRowLayout -> CubeRowLayout
+flipRowLayout (CubeRowLayout row) =
+  row
+  |> Array.toList
+  |> List.reverse
+  |> Array.fromList
+  |> CubeRowLayout 
+
+
 {-|Getter/setter function. Used to address a row counting from the top.
 
     --setup starting condition
@@ -103,13 +147,12 @@ blankFaceLayout cubeSize =
         
 -}
 
-rowFromTop : Int -> Maybe CubeRowLayout -> CubeFaceLayout ->
-  (CubeRowLayout, CubeFaceLayout(modified face))
-rowFromTop rowInt rowNew (CubeFaceLayout {data, cubeSize}) as face =
+rowFromTop : RowManipulator
+rowFromTop rowInt rowNew ((CubeFaceLayout {data, cubeSize}) as face) =
   let
     rowOutput =
       data
-      |>Array.get row
+      |>Array.get rowInt
       |>Maybe.withDefault (blankRowLayout cubeSize)
 
     faceOutput =
@@ -155,10 +198,9 @@ rowFromTop rowInt rowNew (CubeFaceLayout {data, cubeSize}) as face =
     row1 == row0 -- row we wrote in was read back out
 -}
 
-rowFromBottom : Int -> Maybe CubeRowLayout -> CubeFaceLayout ->
-  (CubeRowLayout, CubeFaceLayout(modified face))
-rowFromBottom rowInt rowNew (CubeFaceLayout {cubeSize}) as face =
-  rowFromTop (cubeSize-row) rowNew face
+rowFromBottom : RowManipulator
+rowFromBottom rowInt rowNew ((CubeFaceLayout {cubeSize}) as face) =
+  rowFromTop (cubeSize-rowInt) rowNew face
 
 
 {-|Getter/setter function. Used to address a col counting from the left.
@@ -188,14 +230,36 @@ rowFromBottom rowInt rowNew (CubeFaceLayout {cubeSize}) as face =
     col1 == col0 -- col we wrote in was read back out
 -}
 
-colFromLeft : Int -> CubeFaceLayout -> CubeRowLayout
-colFromLeft col (CubeFaceLayout {data, cubeSize}) =
-  data
-  |>Array.map
-    ( \col ->
-        Array.get col col
-        |>Maybe.withDefault Nothing
-    )
+colFromLeft : RowManipulator
+colFromLeft colInt colNew ((CubeFaceLayout {data, cubeSize}) as face) =
+  let
+    colOutput =
+      data
+      |>Array.map
+      (\row ->
+          row
+          |>Array.get colInt
+          |>Maybe.withDefault Nothing
+      )
+
+    faceOutput =
+      case colNew of
+        Nothing ->
+          face
+
+        Just colNew ->
+          { face
+          | data =
+              data
+              |>Array.map
+              (\row ->
+                  row
+                  |>Array.set colInt (Array.get colInt colNew)
+              )
+          }
+
+  in
+    (colOutput, faceOutput)
 
 
 {-|Getter/setter function. Used to address a col counting from the right.
@@ -225,8 +289,8 @@ colFromLeft col (CubeFaceLayout {data, cubeSize}) =
     col1 == col0 -- col we wrote in was read back out
 -}
 
-colFromRight : Int -> CubeFaceLayout -> CubeRowLayout
-colFromRight col (CubeFaceLayout {cubeSize}) as face =
-  colFromRight (cubeSize-col) face
+colFromRight : RowManipulator
+colFromRight colInt colNew ((CubeFaceLayout {cubeSize}) as face) =
+  colFromLeft (cubeSize-colInt) colNew face
 
 

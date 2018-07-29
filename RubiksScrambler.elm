@@ -14,13 +14,8 @@ import MyBasics exposing (incrementIf, decrementIf, curryRight)
 -- Todo
 
 Status: making CubeFaceLayout module.
-* Have solid function, have getter token-functions.
-
-Next: write applier function using tokens.
-One possibility: make tokens be:
-token : Int(row) -> CubeRowLayout(input row) -> CubeFaceLayout (input face) ->
-  (CubeRowLayout(excised row) CubeFaceLayout(modified face))
-
+* write/test applier function using tokens.
+* Have testSetup now, working from there.
 
 * Next, work out math to apply scramblemoves onto a CubeLayout
 *1> get model to start saving numeric versions of the scramble moves
@@ -29,8 +24,6 @@ token : Int(row) -> CubeRowLayout(input row) -> CubeFaceLayout (input face) ->
 *3> Something to rotate a face
 *4> And of course the logic to tie that all together into a full,
     generic scrambleMove.
-
-# (Nah) Can Move (and other Constants) become opaque?
 
 -}
 

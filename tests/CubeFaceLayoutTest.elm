@@ -1,7 +1,7 @@
 module CubeFaceLayoutTest exposing (cubeFaceLayoutTest)
 
 import Expect exposing (Expectation)
-import Test exposing (..)
+import Test exposing (Test, test, describe)
 --import Fuzz
 
 import Array
@@ -9,51 +9,75 @@ import Array
 import Rubiks.CubeFaceLayout as CFL
 
 
+testSetup : RowManipulator -> String -> Test
+testSetup rowManipulator label faceTest =
+  let
+    face0 =
+      solidFaceLayout 3 4
+
+    row0 =
+      cubeRowLayout [4,4,4]
+
+    rowNew = 
+      cubeRowLayout [1,2,3]
+
+    (row1, face1) =
+      rowManipulator 0 ( Just rowNew ) face0
+
+    (row2, face2) =
+      rowManipulator 0 Nothing face1
+
+  in
+    describe label
+    [ test "row0 == row1"
+      <|\_ ->
+          Expect.equal row0 row1
+
+    , test "face0 /= face1"
+      <|\_ ->
+          Expect.notEqual face0 face1
+
+    , test "rowNew == row2"
+      <|\_ ->
+          Expect.equal rowNew row2
+
+    , test "face1 == face2"
+      <|\_ ->
+          Expect.equal face1 face2
+          
+    , test "face1 == faceTest"
+      <|\_ ->
+          Expect.equal face1 faceTest
+
+    ]
+
+
+
 cubeFaceLayoutTest : Test
 cubeFaceLayoutTest =
   describe "cubeFaceLayoutTest"
-  [ describe "solidFaceLayout -- ?"
-    [ test "3x3 yellow"
-      <|\_ ->
-          Expect.equal
-          ( CFL.solidFaceLayout 3 2 ) -- 2 == yellow
-          <|?
-    ]
-  , describe "rowFromTop"
-    [ test "no write"
-      <|\_ ->
-          let
-            face0 =
-              solidFaceLayout 3 4
-
-            (row0, face1) =
-              rowFromTop 0 ( Just [1,2,3] ) face0
-
-          in
-            Expect.equal
-              (  )
-              ( CubeRowLayout [4,4,4]
-              , CubeFaceLayout
-                { cubeSize = 3
-                , data =
-                  [ CubeRowLayout [1,2,3]
-                  , CubeRowLayout [4,4,4]
-                  , CubeRowLayout [4,4,4]
-                  ]
-                }
-              )
-    , test "read only"
-      <|\_ ->
-          let
-            face0 =
-              solidFaceLayout 3 4
-
-            (prevRow, nextFace) =
-              rowFromTop 0 ( Just [1,2,3] ) face0
-            
-            ()
-          in
-            Expect.equal
-              ( rowFromTop 0 Nothing face0 )
-              ( CubeRowLayout [4,4,4], face0 )
-
+  [ testSetup rowFromTop "rowFromTop"
+      cubeFaceLayout
+      ( cubeRowLayout [1,2,3]
+      , cubeRowLayout [4,4,4]
+      , cubeRowLayout [4,4,4]
+      )
+  , testSetup rowFromBottom "rowFromBottom"
+      cubeFaceLayout
+      ( cubeRowLayout [4,4,4]
+      , cubeRowLayout [4,4,4]
+      , cubeRowLayout [1,2,3]
+      )
+  , testSetup colFromLeft "colFromLeft"
+      cubeFaceLayout
+      ( cubeRowLayout [1,4,4]
+      , cubeRowLayout [2,4,4]
+      , cubeRowLayout [3,4,4]
+      )
+  , testSetup colFromRight "colFromRight"
+      cubeFaceLayout
+      ( cubeRowLayout [4,4,1]
+      , cubeRowLayout [4,4,2]
+      , cubeRowLayout [4,4,3]
+      )
+  ]
