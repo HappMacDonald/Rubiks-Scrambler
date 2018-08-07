@@ -10094,10 +10094,10 @@ var _user$project$Rubiks_Constants$axisNames = _elm_lang$core$Array$fromList(
 var _user$project$Rubiks_Constants$twistDegrees = _elm_lang$core$Array$fromList(
 	{
 		ctor: '::',
-		_0: '0',
+		_0: '  0',
 		_1: {
 			ctor: '::',
-			_0: '90',
+			_0: ' 90',
 			_1: {
 				ctor: '::',
 				_0: '180',
@@ -10109,6 +10109,7 @@ var _user$project$Rubiks_Constants$twistDegrees = _elm_lang$core$Array$fromList(
 			}
 		}
 	});
+var _user$project$Rubiks_Constants$blankLayerChar = _elm_lang$core$Native_Utils.chr('-');
 var _user$project$Rubiks_Constants$defaultCubeSize = 3;
 var _user$project$Rubiks_Constants$maximumAllowedMoves = 30;
 var _user$project$Rubiks_Constants$minimumAllowedMoves = 0;
@@ -10226,7 +10227,7 @@ var _user$project$Rubiks_Layers$renderUncookedLayer = F2(
 		if (_elm_lang$core$Native_Utils.cmp(uncookedIndex, 1) < 0) {
 			return '';
 		} else {
-			var currentChar = _user$project$MyBasics$isEven(uncookedIndex) ? '' : _elm_lang$core$String$fromChar(
+			var currentChar = _user$project$MyBasics$isEven(uncookedIndex) ? _elm_lang$core$String$fromChar(_user$project$Rubiks_Constants$blankLayerChar) : _elm_lang$core$String$fromChar(
 				_elm_lang$core$Char$fromCode(digitCharCode));
 			return A2(
 				_elm_lang$core$String$append,
@@ -10444,20 +10445,30 @@ var _user$project$Rubiks_Helpers$renderMoves = F3(
 						A2(_elm_lang$core$Array$get, cookedMove.axis, _user$project$Rubiks_Constants$axisNames)),
 					A2(
 						_elm_lang$core$Basics_ops['++'],
-						A2(
-							_elm_lang$core$Maybe$withDefault,
-							'!!',
-							A2(_user$project$Rubiks_Layers$getLayer, cubeSize, cookedMove.layer)),
+						' ',
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							'(',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
+							A3(
+								_elm_lang$core$String$padRight,
+								cubeSize,
+								_user$project$Rubiks_Constants$blankLayerChar,
 								A2(
 									_elm_lang$core$Maybe$withDefault,
 									'!!',
-									A2(_elm_lang$core$Array$get, cookedMove.twistDegrees, _user$project$Rubiks_Constants$twistDegrees)),
-								')')))),
+									A2(_user$project$Rubiks_Layers$getLayer, cubeSize, cookedMove.layer))),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								' ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'(',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										A2(
+											_elm_lang$core$Maybe$withDefault,
+											'!!',
+											A2(_elm_lang$core$Array$get, cookedMove.twistDegrees, _user$project$Rubiks_Constants$twistDegrees)),
+										')')))))),
 				_1: A3(_user$project$Rubiks_Helpers$renderMoves, cubeSize, cookedMove.axis, _p4._1)
 			};
 		}
@@ -10885,7 +10896,11 @@ var _user$project$RubiksScrambler$view = function (model) {
 				function (move) {
 					return A2(
 						_elm_lang$html$Html$p,
-						{ctor: '[]'},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('monospace'),
+							_1: {ctor: '[]'}
+						},
 						{
 							ctor: '::',
 							_0: _elm_lang$html$Html$text(move),
