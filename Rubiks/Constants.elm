@@ -74,6 +74,11 @@ defaultCubeSize =
   3
 
 
+blankLayerChar : Char
+blankLayerChar =
+  '-'
+
+
 defaultOrientation : Orientation
 defaultOrientation =
   Orientation 0 0 0 -- All sides red, basically an error condition.
@@ -81,7 +86,7 @@ defaultOrientation =
 
 twistDegrees : Array String
 twistDegrees =
-  Array.fromList ["0", "90", "180", "270"]
+  Array.fromList ["  0", " 90", "180", "270"]
 
 
 axisNames : Array String

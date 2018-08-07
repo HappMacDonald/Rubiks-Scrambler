@@ -166,5 +166,5 @@ view model =
         [ Events.onClick Constants.DoScrambles ]
         [ Html.text "Show" ]
     ]
-  ++( List.map (\move -> Html.p [] [ Html.text move ]) model.scrambleResults )
+  ++( List.map (\move -> Html.p [ Attr.class "monospace" ] [ Html.text move ]) model.scrambleResults )
 

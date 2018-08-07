@@ -138,15 +138,18 @@ renderMoves cubeSize previousAxis uncookedMoves =
           }
 
       in
-        ( ( Maybe.withDefault "!!"
-            <|Array.get cookedMove.axis Constants.axisNames
+        ( ( Array.get cookedMove.axis Constants.axisNames
+            |>Maybe.withDefault "!!"
           )
-          ++( Maybe.withDefault "!!"
-              <|Layers.getLayer cubeSize cookedMove.layer
+          ++" "
+          ++( Layers.getLayer cubeSize cookedMove.layer
+              |>Maybe.withDefault "!!"
+              |>String.padRight cubeSize Constants.blankLayerChar
             )
+          ++" "
           ++"("
-          ++( Maybe.withDefault "!!"
-              <|Array.get cookedMove.twistDegrees Constants.twistDegrees
+          ++( Array.get cookedMove.twistDegrees Constants.twistDegrees
+              |>Maybe.withDefault "!!"
             )
           ++")"
         )

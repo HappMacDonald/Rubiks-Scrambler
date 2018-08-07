@@ -33,3 +33,4 @@ dl dd
 .graphic { float: right; /*width: 42em;*/ background-color: #ccc; padding: 1em; }
 .graphicCell { width: 1em; height: 1em; margin: 0; padding: 0; }
 
+.monospace { font-family: monospace; font-size: 12pt; }

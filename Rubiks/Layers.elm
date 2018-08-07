@@ -13,7 +13,7 @@ import Array exposing (Array)
 import Arithmetic exposing (toBase)
 import Char
 import MyBasics exposing (incrementIf, decrementIf, curryRight)
-
+import Rubiks.Constants as Constants
 
 -- This is a type never meant to be validly used,
 -- thus the presence of it's constructor guarantees a compiler error.
@@ -148,7 +148,7 @@ renderUncookedLayer digitCharCode uncookedIndex =
     let
       currentChar =
         if MyBasics.isEven uncookedIndex then
-          ""
+          String.fromChar Constants.blankLayerChar
         else
           digitCharCode
           |>Char.fromCode
