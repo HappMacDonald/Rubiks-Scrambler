@@ -4,22 +4,22 @@ import Expect exposing (Expectation)
 import Test exposing (Test, test, describe)
 --import Fuzz
 
-import Array
+--import Array
 
 import Rubiks.CubeFaceLayout as CFL
 
 
-testSetup : RowManipulator -> String -> Test
+testSetup : CFL.RowManipulator -> String -> CFL.CubeFaceLayout -> Test
 testSetup rowManipulator label faceTest =
   let
     face0 =
-      solidFaceLayout 3 4
+      CFL.solidFaceLayout 3 <| Just 4
 
     row0 =
-      cubeRowLayout [4,4,4]
+      CFL.cubeRowLayout [4,4,4]
 
     rowNew = 
-      cubeRowLayout [1,2,3]
+      CFL.cubeRowLayout [1,2,3]
 
     (row1, face1) =
       rowManipulator 0 ( Just rowNew ) face0
@@ -56,28 +56,36 @@ testSetup rowManipulator label faceTest =
 cubeFaceLayoutTest : Test
 cubeFaceLayoutTest =
   describe "cubeFaceLayoutTest"
-  [ testSetup rowFromTop "rowFromTop"
-      cubeFaceLayout
-      ( cubeRowLayout [1,2,3]
-      , cubeRowLayout [4,4,4]
-      , cubeRowLayout [4,4,4]
+  [ testSetup CFL.rowFromTop "rowFromTop"
+      ( CFL.cubeFaceLayout
+        [ CFL.cubeRowLayout [1,2,3]
+        , CFL.cubeRowLayout [4,4,4]
+        , CFL.cubeRowLayout [4,4,4]
+        ]
+        |> Result.withDefault ( CFL.blankFaceLayout 0 )
       )
-  , testSetup rowFromBottom "rowFromBottom"
-      cubeFaceLayout
-      ( cubeRowLayout [4,4,4]
-      , cubeRowLayout [4,4,4]
-      , cubeRowLayout [1,2,3]
+  , testSetup CFL.rowFromBottom "rowFromBottom"
+      ( CFL.cubeFaceLayout
+        [ CFL.cubeRowLayout [4,4,4]
+        , CFL.cubeRowLayout [4,4,4]
+        , CFL.cubeRowLayout [1,2,3]
+        ]
+        |> Result.withDefault ( CFL.blankFaceLayout 0 )
       )
-  , testSetup colFromLeft "colFromLeft"
-      cubeFaceLayout
-      ( cubeRowLayout [1,4,4]
-      , cubeRowLayout [2,4,4]
-      , cubeRowLayout [3,4,4]
+  , testSetup CFL.colFromLeft "colFromLeft"
+      ( CFL.cubeFaceLayout
+        [ CFL.cubeRowLayout [1,4,4]
+        , CFL.cubeRowLayout [2,4,4]
+        , CFL.cubeRowLayout [3,4,4]
+        ]
+        |> Result.withDefault ( CFL.blankFaceLayout 0 )
       )
-  , testSetup colFromRight "colFromRight"
-      cubeFaceLayout
-      ( cubeRowLayout [4,4,1]
-      , cubeRowLayout [4,4,2]
-      , cubeRowLayout [4,4,3]
+  , testSetup CFL.colFromRight "colFromRight"
+      ( CFL.cubeFaceLayout
+        [ CFL.cubeRowLayout [4,4,1]
+        , CFL.cubeRowLayout [4,4,2]
+        , CFL.cubeRowLayout [4,4,3]
+        ]
+        |> Result.withDefault ( CFL.blankFaceLayout 0 )
       )
   ]

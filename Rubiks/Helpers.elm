@@ -139,15 +139,15 @@ renderMoves cubeSize previousAxis uncookedMoves =
           }
 
       in
-        ( ( Maybe.withDefault "!!"
-            <|Array.get cookedMove.axis Constants.axisNames
+        ( ( Array.get cookedMove.axis Constants.axisNames
+            |>Maybe.withDefault "!!"
           )
-          ++( Maybe.withDefault "!!"
-              <|Layers.getLayer cubeSize cookedMove.layer
+          ++( Layers.getLayer cubeSize cookedMove.layer
+              |>Maybe.withDefault "!!"
             )
           ++"("
-          ++( Maybe.withDefault "!!"
-              <|Array.get cookedMove.twistDegrees Constants.twistDegrees
+          ++( Array.get cookedMove.twistDegrees Constants.twistDegrees
+              |>Maybe.withDefault "!!"
             )
           ++")"
         )
@@ -207,7 +207,7 @@ ordinary face order (cells in face = faceIndex :P) at the specified cubeSize.
 defaultCubeLayout : Int -> Array CubeFaceLayout
 defaultCubeLayout cubeSize =
   List.range 0 5
-  |> List.map Maybe
+  |> List.map Just
   |> solidCubeLayout cubeSize
 
 
@@ -216,18 +216,21 @@ defaultCubeLayout cubeSize =
 
 orientedCubeLayout : Int -> Constants.Orientation -> Array CubeFaceLayout
 orientedCubeLayout cubeSize orientation =
-  let
-    opposingColor color =
-      Maybe.map
-        Constants.opposingColorInts
-        |>Array.get color
-  in
-    [ orientation.up
-    , opposingColor orientation.right
-    , orientation.front
-    , orientation.right
-    , opposingColor orientation.front
-    , opposingColor orientation.up
+  -- let
+    -- opposingColor : Int -> Maybe Int
+    -- opposingColor color =
+    --   Constants.opposingColorInts |> Array.get color 
+      -- Array.get color Constants.opposingColorInts
+      -- Maybe.map
+      --   Constants.opposingColorInts
+      --   |>Array.get color
+  -- in
+    [ Just orientation.up
+    , Constants.opposingColorInts |> Array.get orientation.right
+    , Just orientation.front
+    , Just orientation.right
+    , Constants.opposingColorInts |> Array.get orientation.front
+    , Constants.opposingColorInts |> Array.get orientation.up
     ]
     |>solidCubeLayout cubeSize
 

@@ -6,6 +6,7 @@ import Test exposing (..)
 
 import Rubiks.Constants as C
 import Rubiks.Helpers as H
+import Rubiks.CubeFaceLayout as CFL
 
 import Array
 
@@ -130,49 +131,72 @@ rubiksScramblerTest =
   , describe "defaultCubeLayout"
     [ test "2x2x2"
       <|\_ ->
-          Expect.equal
-            ( H.defaultCubeLayout 2 )
-            <|Array.fromList
-              [ Array.fromList
-                [ Array.fromList [ 0, 0 ]
-                , Array.fromList [ 0, 0 ]
-                ]
-              , Array.fromList
-                [ Array.fromList [ 1, 1 ]
-                , Array.fromList [ 1, 1 ]
-                ]
-              , Array.fromList
-                [ Array.fromList [ 2, 2 ]
-                , Array.fromList [ 2, 2 ]
-                ]
-              , Array.fromList
-                [ Array.fromList [ 3, 3 ]
-                , Array.fromList [ 3, 3 ]
-                ]
-              , Array.fromList
-                [ Array.fromList [ 4, 4 ]
-                , Array.fromList [ 4, 4 ]
-                ]
-              , Array.fromList
-                [ Array.fromList [ 5, 5 ]
-                , Array.fromList [ 5, 5 ]
-                ]
+          let
+            solidFaceLayout2 cell =
+              CFL.cubeFaceLayout
+              [ CFL.cubeRowLayout [ Just cell, Just cell ]
+              , CFL.cubeRowLayout [ Just cell, Just cell ]
               ]
+              |>Result.withDefault ( CFL.blankFaceLayout 2 )
+
+          in
+            Expect.equal
+              ( H.defaultCubeLayout 2 )
+              <|Array.fromList
+              [ solidFaceLayout2 0
+              , solidFaceLayout2 1
+              , solidFaceLayout2 2
+              , solidFaceLayout2 3
+              , solidFaceLayout2 4
+              , solidFaceLayout2 5
+              ]
+            -- <|Array.fromList
+            --   [ Array.fromList
+            --     [ Array.fromList [ 0, 0 ]
+            --     , Array.fromList [ 0, 0 ]
+            --     ]
+            --   , Array.fromList
+            --     [ Array.fromList [ 1, 1 ]
+            --     , Array.fromList [ 1, 1 ]
+            --     ]
+            --   , Array.fromList
+            --     [ Array.fromList [ 2, 2 ]
+            --     , Array.fromList [ 2, 2 ]
+            --     ]
+            --   , Array.fromList
+            --     [ Array.fromList [ 3, 3 ]
+            --     , Array.fromList [ 3, 3 ]
+            --     ]
+            --   , Array.fromList
+            --     [ Array.fromList [ 4, 4 ]
+            --     , Array.fromList [ 4, 4 ]
+            --     ]
+            --   , Array.fromList
+            --     [ Array.fromList [ 5, 5 ]
+            --     , Array.fromList [ 5, 5 ]
+            --     ]
+            --   ]
     ]
   , describe "orientedCubeLayout"
     [ test "1x1x1 front=orange, up=blue, right=white (Orientation 5 1 4)"
       <|\_ ->
-          Expect.equal
-          ( C.Orientation 5 1 4
-          |>H.orientedCubeLayout 1
-          )
-          <|Array.fromList
-            [ Array.fromList [ Array.fromList [ 1 ] ]
-            , Array.fromList [ Array.fromList [ 2 ] ]
-            , Array.fromList [ Array.fromList [ 5 ] ]
-            , Array.fromList [ Array.fromList [ 4 ] ]
-            , Array.fromList [ Array.fromList [ 0 ] ]
-            , Array.fromList [ Array.fromList [ 3 ] ]
-            ]
+          let
+            solidFaceLayout1 cell =
+              CFL.cubeFaceLayout [ CFL.cubeRowLayout [ Just cell ] ]
+              |>Result.withDefault ( CFL.blankFaceLayout 1 )
+
+          in
+            Expect.equal
+            ( C.Orientation 5 1 4
+            |>H.orientedCubeLayout 1
+            )
+            <|Array.fromList
+              [ solidFaceLayout1 1
+              , solidFaceLayout1 2
+              , solidFaceLayout1 5
+              , solidFaceLayout1 4
+              , solidFaceLayout1 0
+              , solidFaceLayout1 3
+              ]
     ]
   ]

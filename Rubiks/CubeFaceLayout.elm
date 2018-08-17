@@ -1,7 +1,11 @@
 module Rubiks.CubeFaceLayout exposing
   ( CubeFaceLayout
+  , cubeFaceLayout
   , CubeRowLayout
+  , cubeRowLayout
+  , RowManipulator
   , solidFaceLayout
+  , blankFaceLayout
   , rowFromTop
   , rowFromBottom
   , colFromLeft
@@ -9,13 +13,9 @@ module Rubiks.CubeFaceLayout exposing
   )
 
 
-import Rubiks.Constants
+--import Rubiks.Constants
 
 import Array exposing (Array)
-
-
-type CubeRowLayout =
-  CubeRowLayout (Array (Maybe Int))
 
 
 type CubeFaceLayout =
@@ -28,15 +28,6 @@ type CubeFaceLayout =
 type alias RowManipulator =
   Int -> Maybe CubeRowLayout -> CubeFaceLayout ->
   (CubeRowLayout, CubeFaceLayout)
-
-{-|Constructs a row that is a solid color.
-
-    solidRowLayout 3 <| Just 5 == 3 orange cells in a row
--}
-
-solidRowLayout : Int -> Maybe Int -> CubeRowLayout
-solidRowLayout cubeSize color =
-  Array.fromList <| List.repeat cubeSize color
 
 
 {-|Constructs a face that is a solid color, the one provided.
@@ -79,10 +70,10 @@ blankFaceLayout cubeSize =
   solidFaceLayout cubeSize Nothing
 
 
-cubeRowLayout : List Int -> CubeRowLayout
+cubeRowLayout : List (Maybe Int) -> CubeRowLayout
 cubeRowLayout rowData =
   rowData
-  |> List.map Just
+  -- |> List.map Just
   |> Array.fromList
   |> CubeRowLayout
 
@@ -99,12 +90,12 @@ cubeFaceLayout rowsData =
       rowsData
   in
     if valid then
-      { cubeSize = Array.length rowsData
+      { cubeSize = List.length rowsData
       , data =
           rowsData
           |> Array.fromList
-          |> CubeFaceLayout
       }
+      |> CubeFaceLayout
       |> Ok
     else
       Err "All rows must be the same length as the number of rows passed in." 
@@ -161,8 +152,9 @@ rowFromTop rowInt rowNew ((CubeFaceLayout {data, cubeSize}) as face) =
           face
 
         Just rowNew ->
-          { face
-          | data =
+          CubeFaceLayout
+          { cubeSize = cubeSize
+          , data =
               data
               |>Array.set rowInt rowNew
           }
@@ -236,25 +228,31 @@ colFromLeft colInt colNew ((CubeFaceLayout {data, cubeSize}) as face) =
     colOutput =
       data
       |>Array.map
-      (\row ->
+      (\ (CubeRowLayout row) ->
           row
           |>Array.get colInt
           |>Maybe.withDefault Nothing
       )
+      |>CubeRowLayout
 
     faceOutput =
       case colNew of
         Nothing ->
           face
 
-        Just colNew ->
-          { face
-          | data =
+        Just (CubeRowLayout colNew) ->
+          CubeFaceLayout
+          { cubeSize = cubeSize
+          , data =
               data
               |>Array.map
-              (\row ->
+              (\(CubeRowLayout row) ->
                   row
-                  |>Array.set colInt (Array.get colInt colNew)
+                  |>Array.set colInt
+                    ( Array.get colInt colNew
+                      |>Maybe.withDefault Nothing
+                    )
+                  |>CubeRowLayout
               )
           }
 
