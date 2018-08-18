@@ -4,6 +4,7 @@ module Rubiks.CubeRowLayout exposing
   , solidRowLayout
   , blankRowLayout
   , cellAt
+  , length
   )
 
 
@@ -81,3 +82,13 @@ Returns Nothing if position indicated is out of bounds
 cellAt : Int -> CubeRowLayout -> Maybe Cell
 cellAt position (CubeRowLayout row) =
   Array.get position row
+
+
+{-|Tells how long the CubeRowLayout object is in cells.
+
+    CubeRowLayout A[1,1,1] |> length == 3
+-}
+
+length : CubeRowLayout -> Int
+length ( CubeRowLayout row ) =
+  Array.length row

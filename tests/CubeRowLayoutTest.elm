@@ -31,6 +31,7 @@ cubeRowLayoutTest =
               ( CRL.cubeRowLayout [] )
               Nothing
     ]
+
   , describe "solidRowLayout"
     [ test "solidRowLayout 3 5 != Nothing"
         <|\_ ->
@@ -48,6 +49,7 @@ cubeRowLayoutTest =
               ( CRL.solidRowLayout 3 -1 )
               Nothing
     ]
+
   , describe "blankRowLayout"
     [ test "blankRowLayout 3 != Nothing"
         <|\_ ->
@@ -60,6 +62,7 @@ cubeRowLayoutTest =
               ( CRL.blankRowLayout 0 )
               Nothing
     ]
+
   , describe "cellAt"
     [ test "CubeRowLayout A[1,2,3] |> cellAt 1 == Just ColorCell 2"
         <|\_ ->
@@ -86,5 +89,16 @@ cubeRowLayoutTest =
             Expect.equal
               ( CRL.solidRowLayout 3 1 |> Maybe.map (CRL.cellAt 1) )
               ( Just <| Cell.colorCell 1 )
+    ]
+
+  , describe "length"
+    [ test "CubeRowLayout A[1,1,1] |> length == 3"
+        <|\_ ->
+            Expect.equal
+              ( CRL.solidRowLayout 3 1
+              |>Maybe.map CRL.length
+              |>Maybe.withDefault -999
+              )
+              3
     ]
   ]
