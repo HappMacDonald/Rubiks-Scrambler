@@ -5,6 +5,7 @@ module Rubiks.CubeRowLayout exposing
   , blankRowLayout
   , cellAt
   , length
+  , flipRowLayout
   )
 
 
@@ -92,3 +93,12 @@ cellAt position (CubeRowLayout row) =
 length : CubeRowLayout -> Int
 length ( CubeRowLayout row ) =
   Array.length row
+
+
+flipRowLayout : CubeRowLayout -> CubeRowLayout
+flipRowLayout (CubeRowLayout row) =
+  row
+  |> Array.toList
+  |> List.reverse
+  |> Array.fromList
+  |> CubeRowLayout 

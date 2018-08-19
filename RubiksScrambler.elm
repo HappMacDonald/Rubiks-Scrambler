@@ -14,7 +14,10 @@ import MyBasics exposing (incrementIf, decrementIf, curryRight)
 -- Todo
 
 Status: making CubeFaceLayout module.
-* I'm starting CubeFaceLayout (Cell and Row were a success)
+* I'm nearing the end of CubeFaceLayout.
+* First tests for row manipulators, and I've just tested a simple
+  and powerful way to do test setup.
+* Let-in expressions basically anywhere I feel like it. ;P
 
 * Next, work out math to apply scramblemoves onto a CubeLayout
 *1> get model to start saving numeric versions of the scramble moves

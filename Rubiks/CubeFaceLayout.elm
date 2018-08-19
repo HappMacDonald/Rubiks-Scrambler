@@ -3,9 +3,10 @@ module Rubiks.CubeFaceLayout exposing
   , cubeFaceLayout
   , RowManipulator
   , cubeSize
-  -- , solidFaceLayout
-  -- , blankFaceLayout
-  -- , rowFromTop
+  , solidFaceLayout
+  , blankFaceLayout
+  , cellAt
+  , rowFromTop
   -- , rowFromBottom
   -- , colFromLeft
   -- , colFromRight
@@ -14,6 +15,7 @@ module Rubiks.CubeFaceLayout exposing
 
 --import Rubiks.Constants
 import Rubiks.CubeRowLayout as CRL
+import Rubiks.Cell as Cell exposing (Cell)
 
 
 import Array exposing (Array)
@@ -26,7 +28,7 @@ type CubeFaceLayout =
 
 type alias RowManipulator =
   Int -> CRL.CubeRowLayout -> CubeFaceLayout ->
-  (CRL.CubeRowLayout, CubeFaceLayout)
+  Maybe (CRL.CubeRowLayout, CubeFaceLayout)
 
 
 {-| Primary constructor. Transforms a list of lists of Ints into a cube face.
@@ -78,93 +80,75 @@ cubeSize : CubeFaceLayout -> Int
 cubeSize ( CubeFaceLayout rows ) =
   Array.length rows
 
--- {-|Constructs a face that is a solid color, the one provided.
--- "color" is expressed as a Maybe Int.
--- 0-6 are valid cube colors as defined in Rubicks.Constants.
--- Nothing is the blank color.
--- Nothing renders to transparent in graphics, and is used as
--- a logical transparency in overpainting operations.
 
---     solidFaceLayout 4 2 == a 4x4 CubeFaceLayout that is yellow everywhere.
--- -}
--- solidFaceLayout : Int -> Maybe Int -> CubeFaceLayout
--- solidFaceLayout cubeSize color =
---   CubeFaceLayout
---   { cubeSize = cubeSize
---   , data =
---       Array.fromList
---       <|List.repeat cubeSize -- cubeSize full rows
---       <|solidRowLayout cubeSize color -- cubeSize cells per row
---   }
+{-|Constructs a face that is a solid color, the one provided.
+"color" is expressed as an Int.
+0-6 are valid cube colors as defined in Rubicks.Constants.
+
+    solidFaceLayout 2 4 == a 2x2 CubeFaceLayout that is color 4 everywhere.
+-}
+
+solidFaceLayout : Int -> Int -> Maybe CubeFaceLayout
+solidFaceLayout cubeSize color =
+  List.repeat cubeSize color
+  |>List.repeat cubeSize
+  |>cubeFaceLayout
 
 
--- {-|Create an empty row of given size.
+{-|Create an empty face of the given size.
 
---     blankRowLayout 3 == 3 empty (colorless) cells in a row.
--- -}
+    blankFaceLayout 3 == an empty (colorless) 3x3 face.
+-}
 
--- blankRowLayout : Int -> CubeRowLayout
--- blankRowLayout cubesize =
---   solidRowLayout cubesize Nothing
-
-
--- {-|Create an empty face of the given size.
-
---     blankFaceLayout 3 == an empty (colorless) 3x3 face.
--- -}
-
--- blankFaceLayout : Int -> CubeFaceLayout
--- blankFaceLayout cubeSize =
---   solidFaceLayout cubeSize Nothing
+blankFaceLayout : Int -> Maybe CubeFaceLayout
+blankFaceLayout cubeSize =
+  if cubeSize<1 then
+    Nothing
+  else
+    CRL.blankRowLayout cubeSize
+    |> Maybe.map ( List.repeat cubeSize )
+    |> Maybe.map Array.fromList
+    |> Maybe.map CubeFaceLayout
 
 
--- cubeRowLayout : List (Maybe Int) -> CubeRowLayout
--- cubeRowLayout rowData =
---   rowData
---   -- |> List.map Just
---   |> Array.fromList
---   |> CubeRowLayout
+{-|Retrieve the cell object at a certain coordinate.
+Pass in row, then column.
+
+    cubeFaceLayout [[0,3],[0,0]]
+    |>Maybe.map (cellAt 0 1)
+    ==Just (Cell.colorCell 3)
+-}
+cellAt : Int -> Int -> CubeFaceLayout -> Maybe Cell
+cellAt row column ( CubeFaceLayout rows ) =
+  Array.get row rows
+  |>Maybe.andThen ( CRL.cellAt column )
 
 
--- flipRowLayout : CubeRowLayout -> CubeRowLayout
--- flipRowLayout (CubeRowLayout row) =
---   row
---   |> Array.toList
---   |> List.reverse
---   |> Array.fromList
---   |> CubeRowLayout 
 
 
--- {-|Getter/setter function. Used to address a row counting from the top.
+{-|Getter/setter function. Used to address a row counting from the top.
 
---     --setup starting condition
---     face0 = solidFaceLayout 3 4
+    --setup starting condition
+    face0 = solidFaceLayout 3 4
+    row0 = CRL.cubeRowLayout [1,2,3]
 
---     -- write and read
---     (row0, face1) = rowFromTop 0 ( Just [1,2,3] ) face0
+    -- write and read
+    (row1, face1) = rowFromTop 0 row0 face0
 
---     -- read only from previously written state
---     (row1, _) = rowFromTop 0 Nothing face1
+    -- read only from previously written state
+    (row2, face2) = rowFromTop 0 Nothing face1
 
---     -- results
---     row0 == [1,2,3] -- that's the row data we wrote the first time
---     face1 ==        -- changed results of face
---       ( CubeRowLayout [4,4,4]
---       , CubeFaceLayout
---         { cubeSize = 3
---         , data =
---           [ CubeRowLayout [1,2,3]
---           , CubeRowLayout [4,4,4]
---           , CubeRowLayout [4,4,4]
---           ]
---         }
---       )
---     row1 == row0 -- row we wrote in was read back out
-        
--- -}
+    -- results
+    row1 == CRL.cubeRowLayout [4,4,4] -- data read from face0
+    face1 == -- changed results of face
+      cubeFaceLayout [[1,2,3], [4,4,4], [4,4,4]]
+    row2 == row0 -- row we wrote in was read back out
+    face2 == face1 -- second operation did not write to face        
+-}
 
--- rowFromTop : RowManipulator
--- rowFromTop rowInt rowNew ((CubeFaceLayout {data, cubeSize}) as face) =
+rowFromTop : RowManipulator
+rowFromTop rowInt rowNew ((CubeFaceLayout rows) as face) =
+  Nothing
 --   let
 --     rowOutput =
 --       data

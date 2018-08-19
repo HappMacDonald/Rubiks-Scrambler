@@ -101,4 +101,18 @@ cubeRowLayoutTest =
               )
               3
     ]
+
+  , describe "flipRowLayout"
+    [ test "flipRowLayout CubeRowLayout A[1,2,3] == CubeRowLayout A[3,2,1]"
+        <|\_ ->
+            Expect.equal
+              ( [1,2,3]
+              |>CRL.cubeRowLayout
+              |>Maybe.map CRL.flipRowLayout
+              )
+              ( [3,2,1]
+              |>CRL.cubeRowLayout
+              )
+    ]
+
   ]
