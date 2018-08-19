@@ -27,7 +27,7 @@ type CubeFaceLayout =
 
 
 type alias RowManipulator =
-  Int -> CRL.CubeRowLayout -> CubeFaceLayout ->
+  Int -> Maybe CRL.CubeRowLayout -> CubeFaceLayout ->
   Maybe (CRL.CubeRowLayout, CubeFaceLayout)
 
 
@@ -129,21 +129,21 @@ cellAt row column ( CubeFaceLayout rows ) =
 {-|Getter/setter function. Used to address a row counting from the top.
 
     --setup starting condition
-    face0 = solidFaceLayout 3 4
-    row0 = CRL.cubeRowLayout [1,2,3]
+    Just row0 = CRL.cubeRowLayout [1,2,3]
+    Just face0 = solidFaceLayout 3 4
 
     -- write and read
-    (row1, face1) = rowFromTop 0 row0 face0
+    Just (row1, face1) = rowFromTop 0 row0 face0
 
     -- read only from previously written state
-    (row2, face2) = rowFromTop 0 Nothing face1
+    Just (row2, face2) = rowFromTop 0 Nothing face1
 
     -- results
-    row1 == CRL.cubeRowLayout [4,4,4] -- data read from face0
-    face1 == -- changed results of face
+    Just row1 == CRL.cubeRowLayout [4,4,4] -- data read from face0
+    Just face1 == -- changed results of face
       cubeFaceLayout [[1,2,3], [4,4,4], [4,4,4]]
     row2 == row0 -- row we wrote in was read back out
-    face2 == face1 -- second operation did not write to face        
+    face2 == face1 -- second operation did not write to face
 -}
 
 rowFromTop : RowManipulator

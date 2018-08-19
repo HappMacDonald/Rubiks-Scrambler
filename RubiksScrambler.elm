@@ -15,9 +15,10 @@ import MyBasics exposing (incrementIf, decrementIf, curryRight)
 
 Status: making CubeFaceLayout module.
 * I'm nearing the end of CubeFaceLayout.
-* First tests for row manipulators, and I've just tested a simple
-  and powerful way to do test setup.
-* Let-in expressions basically anywhere I feel like it. ;P
+* First tests for row manipulators
+* Lots of Maybe-ridden setup, so I set up a way to handle that
+  and report serious input errors.
+* Unfortunately, that is what it is presently reporting. :/
 
 * Next, work out math to apply scramblemoves onto a CubeLayout
 *1> get model to start saving numeric versions of the scramble moves
