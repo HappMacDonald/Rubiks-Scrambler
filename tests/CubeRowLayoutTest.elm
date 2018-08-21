@@ -7,6 +7,7 @@ import Test exposing (Test, test, describe)
 --import Array
 
 
+import MyBasics
 import Rubiks.CubeRowLayout as CRL
 import Rubiks.Cell as Cell exposing (Cell)
 
@@ -64,16 +65,16 @@ cubeRowLayoutTest =
     ]
 
   , describe "cellAt"
-    [ test "CubeRowLayout A[1,2,3] |> cellAt 1 == Just ColorCell 2"
-        <|\_ ->
-            Expect.equal
-              ( [1,2,3] |> CRL.cubeRowLayout |> Maybe.map (CRL.cellAt 1) )
-              ( Just <| Cell.colorCell 2 )
-    , test "CubeRowLayout A[1,2,3] |> cellAt 1 != Nothing"
+    [ test "CubeRowLayout A[1,2,3] |> cellAt 1 != Nothing"
         <|\_ ->
             Expect.notEqual
               ( [1,2,3] |> CRL.cubeRowLayout |> Maybe.map (CRL.cellAt 1) )
               Nothing
+    , test "CubeRowLayout A[1,2,3] |> cellAt 1 == Just ColorCell 2"
+        <|\_ ->
+            Expect.equal
+              ( [1,2,3] |> CRL.cubeRowLayout |> Maybe.map (CRL.cellAt 1) )
+              ( Just <| Cell.colorCell 2 )
     , test "CubeRowLayout A[1,2,3] |> cellAt 10 == Nothing"
         <|\_ ->
             Expect.equal
@@ -89,6 +90,32 @@ cubeRowLayoutTest =
             Expect.equal
               ( CRL.solidRowLayout 3 1 |> Maybe.map (CRL.cellAt 1) )
               ( Just <| Cell.colorCell 1 )
+    ]
+
+  , describe "cellSet"
+    [ test
+      ( "CubeRowLayout A[1,2,3] |> cellSet 1 ( ColorCell 5 )"
+      ++" == CubeRowLayout A[5,2,3]"
+      )
+        <|\_ ->
+            Expect.equal
+              ( MyBasics.maybeAndThen2 ( CRL.cellSet 1 )
+                ( Cell.colorCell 5 )
+                ( CRL.cubeRowLayout [1,2,3] )
+              )
+              ( CRL.cubeRowLayout [5,2,3] )
+    , test
+      ( "cubeRowLayout [1,2,3] |> cellSet 1 BlankCell |> cellAt 1"
+      ++" == BlankCell"
+      )
+        <|\_ ->
+            Expect.equal
+              ( Maybe.andThen
+                  ( CRL.cellSet 1 Cell.BlankCell )
+                  ( CRL.cubeRowLayout [1,2,3] )
+              |>Maybe.andThen ( CRL.cellAt 1 )
+              )
+              ( Just Cell.BlankCell )
     ]
 
   , describe "length"

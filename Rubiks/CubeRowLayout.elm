@@ -4,6 +4,7 @@ module Rubiks.CubeRowLayout exposing
   , solidRowLayout
   , blankRowLayout
   , cellAt
+  , cellSet
   , length
   , flipRowLayout
   )
@@ -76,8 +77,11 @@ blankRowLayout cubeSize =
 {-|Returns the (Maybe Cell) corresponding with the position in the row indicated
 Returns Nothing if position indicated is out of bounds
 
-    CubeRowLayout [1,2,3] |> cellAt 1 == Just ColorCell 2
-    CubeRowLayout [1,2,3] |> cellAt 10 == Nothing
+    CubeRowLayout A[1,2,3] |> cellAt 1 == Just ColorCell 2
+    CubeRowLayout A[1,2,3] |> cellAt 10 == Nothing
+    CubeRowLayout A[BlankCell] |> cellAt 0 == Just BlankCell
+    CubeRowLayout A[1,1,1] |> cellAt 1 == Just ColorCell 1
+
 -}
 
 cellAt : Int -> CubeRowLayout -> Maybe Cell
@@ -85,9 +89,29 @@ cellAt position (CubeRowLayout row) =
   Array.get position row
 
 
+{-|Changes the specified cell within the row, and returns a Maybe of the result.
+Index out of range will result in Nothing.
+
+    CubeRowLayout A[1,2,3] |> cellSet 1 ( ColorCell 5 )
+    == CubeRowLayout A[5,2,3]
+
+    -- As of this writing, below row cannot be mass-constructed. ;)
+    CubeRowLayout A[1,2,3]
+    |>cellSet 1 BlankCell
+    |>cellAt 1
+    ==BlankCell 
+
+    CubeRowLayout A[1,2,3] |> cellSet 10 ( ColorCell 4 ) == Nothing
+-}
+
+cellSet : Int -> Cell -> CubeRowLayout -> Maybe CubeRowLayout
+cellSet position cell (CubeRowLayout row) =
+  Nothing
+
+
 {-|Tells how long the CubeRowLayout object is in cells.
 
-    CubeRowLayout A[1,1,1] |> length == 3
+    cubeRowLayout [1,1,1] |> length == 3
 -}
 
 length : CubeRowLayout -> Int

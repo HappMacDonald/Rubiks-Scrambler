@@ -7,9 +7,12 @@ module Rubiks.CubeFaceLayout exposing
   , blankFaceLayout
   , cellAt
   , rowFromTop
-  -- , rowFromBottom
-  -- , colFromLeft
+  , rowFromBottom
+  , colFromLeft
   -- , colFromRight
+  -- , rotate90
+  -- , rotate180
+  -- , rotate270
   )
 
 
@@ -133,7 +136,7 @@ cellAt row column ( CubeFaceLayout rows ) =
     Just face0 = solidFaceLayout 3 4
 
     -- write and read
-    Just (row1, face1) = rowFromTop 0 row0 face0
+    Just (row1, face1) = rowFromTop 0 Just row0 face0
 
     -- read only from previously written state
     Just (row2, face2) = rowFromTop 0 Nothing face1
@@ -147,92 +150,100 @@ cellAt row column ( CubeFaceLayout rows ) =
 -}
 
 rowFromTop : RowManipulator
-rowFromTop rowInt rowNew ((CubeFaceLayout rows) as face) =
-  Nothing
---   let
---     rowOutput =
---       data
---       |>Array.get rowInt
---       |>Maybe.withDefault (blankRowLayout cubeSize)
+rowFromTop rowInt rowNewMaybe ((CubeFaceLayout rows) as face) =
+  let
+    rowOutputMaybe =
+      Array.get rowInt rows
 
---     faceOutput =
---       case rowNew of
---         Nothing ->
---           face
+    faceOutput =
+      case rowNewMaybe of
+        Nothing ->
+          face
 
---         Just rowNew ->
---           CubeFaceLayout
---           { cubeSize = cubeSize
---           , data =
---               data
---               |>Array.set rowInt rowNew
---           }
+        Just rowNew ->
+          Array.set rowInt rowNew rows
+          |>CubeFaceLayout
+  in
+    Maybe.map2 (,) rowOutputMaybe ( Just faceOutput )
+    -- case rowOutputMaybe of
+    --   Nothing ->
+    --     Nothing
 
---   in
---     (rowOutput, faceOutput)
+    --   Just rowOutput ->
+    --     Just (rowOutput, faceOutput)
 
 
--- {-|Getter/setter function. Used to address a row counting from the bottom.
+{-|Getter/setter function. Used to address a row counting from the bottom.
 
---     --setup starting condition
---     face0 = solidFaceLayout 3 4
+    --setup starting condition
+    Just row0 = CRL.cubeRowLayout [1,2,3]
+    Just face0 = solidFaceLayout 3 4
 
---     -- write and read
---     (row0, face1) = rowFromBottom 0 ( Just [1,2,3] ) face0
+    -- write and read
+    Just (row1, face1) = rowFromBottom 0 Just row0 face0
 
---     -- read only from previously written state
---     (row1, _) = rowFromBottom 0 Nothing face1
+    -- read only from previously written state
+    Just (row2, face2) = rowFromBottom 0 Nothing face1
 
---     -- results
---     row0 == [1,2,3] -- that's the row data we wrote the first time
---     face1 ==        -- changed results of face
---       ( CubeRowLayout [4,4,4]
---       , CubeFaceLayout
---         { cubeSize = 3
---         , data =
---           [ CubeRowLayout [4,4,4]
---           , CubeRowLayout [4,4,4]
---           , CubeRowLayout [1,2,3]
---           ]
---         }
---       )
---     row1 == row0 -- row we wrote in was read back out
--- -}
+    -- results
+    Just row1 == CRL.cubeRowLayout [4,4,4] -- data read from face0
+    Just face1 == -- changed results of face
+      cubeFaceLayout [[4,4,4], [4,4,4], [1,2,3]]
+    row2 == row0 -- row we wrote in was read back out
+    face2 == face1 -- second operation did not write to face
+-}
 
--- rowFromBottom : RowManipulator
--- rowFromBottom rowInt rowNew ((CubeFaceLayout {cubeSize}) as face) =
---   rowFromTop (cubeSize-rowInt) rowNew face
+rowFromBottom : RowManipulator
+rowFromBottom rowInt rowNewMaybe ((CubeFaceLayout rows) as face) =
+  rowFromTop ( (Array.length rows) - rowInt - 1) rowNewMaybe face
 
 
--- {-|Getter/setter function. Used to address a col counting from the left.
+{-|Getter/setter function. Used to address a col counting from the left.
 
---     --setup starting condition
---     face0 = solidFaceLayout 3 4
+    --setup starting condition
+    Just col0 = CRL.cubeRowLayout [1,2,3]
+    Just face0 = solidFaceLayout 3 4
 
---     -- write and read
---     (col0, face1) = colFromLeft 0 ( Just [1,2,3] ) face0
+    -- write and read
+    Just (col1, face1) = colFromLeft 0 Just col0 face0
 
---     -- read only from previously written state
---     (col1, _) = colFromLeft 0 Nothing face1
+    -- read only from previously written state
+    Just (col2, face2) = colFromLeft 0 Nothing face1
 
---     -- results
---     col0 == [1,2,3] -- that's the col data we wrote the first time
---     face1 ==        -- changed results of face
---       ( CubeRowLayout [4,4,4]
---       , CubeFaceLayout
---         { cubeSize = 3
---         , data =
---           [ CubeRowLayout [1,4,4]
---           , CubeRowLayout [2,4,4]
---           , CubeRowLayout [3,4,4]
---           ]
---         }
---       )
---     col1 == col0 -- col we wrote in was read back out
--- -}
+    -- results
+    Just col1 == CRL.cubeRowLayout [4,4,4] -- data read from face0
+    Just face1 == -- changed results of face
+      cubeFaceLayout [[1,4,4], [2,4,4], [3,4,4]]
+    col2 == col0 -- col we wrote in was read back out
+    face2 == face1 -- second operation did not write to face
+-}
 
--- colFromLeft : RowManipulator
--- colFromLeft colInt colNew ((CubeFaceLayout {data, cubeSize}) as face) =
+colFromLeft : RowManipulator
+colFromLeft colInt colNewMaybe ((CubeFaceLayout rows) as face) =
+  let
+    colOutputMaybe =
+      Array.map (\row -> Array.get colInt row) rows
+      |>Maybe.Extra.traverseArray
+
+
+
+    faceOutput =
+      case colNewMaybe of
+        Nothing ->
+          face
+
+        Just colNew ->
+          Array.indexedMap
+            (\rowIndex row -> CRL.)
+            ( Array.toList rows )
+            ( Array.toList colNew )
+          |>Array.fromList
+          |>Maybe.Extra.traverseArray
+          |>Maybe.map CubeFaceLayout
+
+  in
+    Maybe.map2 (,) colOutputMaybe faceOutput
+
 --   let
 --     colOutput =
 --       data
